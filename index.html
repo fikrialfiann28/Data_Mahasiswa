@@ -1,0 +1,265 @@
+  <!DOCTYPE html>
+  <html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manajemen Data Mahasiswa</title>
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS UTAMA (WAJIB SEBELUM TAILWIND) -->
+    <link rel="stylesheet" href="css/style.css">
+  
+    <!-- OPTIONAL: Tailwind (boleh dipakai, tapi tidak wajib) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- ================= TOP BAR ================= -->
+    <header class="topbar">
+      <div class="dark-toggle" onclick="toggleDark()" title="Dark Mode">
+        <div class="toggle-track">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <button id="menuBtn" class="menu-btn" aria-label="Buka Menu">☰</button>
+      <h2>Manajemen Mahasiswa</h2>
+    </header>
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside id="sidebar" class="sidebar">
+      <h3>Menu</h3>
+
+      <button type="button" onclick="showSection('input')">
+        ➕ Input Mahasiswa
+      </button>
+
+      <button type="button" onclick="showSection('data')">
+        📊 Data Mahasiswa
+      </button>
+
+      <hr />
+
+    </aside>
+
+    <!-- ================= EDIT MODAL ================= -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <h2>Edit Data Mahasiswa</h2>
+
+      <p><b>NIM:</b> <span id="edit-nim"></span></p>
+
+      <input id="edit-nama" placeholder="Nama">
+      <input id="edit-email" placeholder="Email">
+      <input id="edit-prodi" placeholder="Program Studi">
+      <input id="edit-angkatan" placeholder="Angkatan">
+      
+      <select id="edit-status">
+        <option value="Aktif">Aktif</option>
+        <option value="Cuti">Cuti</option>
+        <option value="Lulus">Lulus</option>
+      </select>
+
+      <div class="modal-actions">
+        <button id="saveEditBtn" class="btn">Simpan</button>
+        <button onclick="closeEdit()" class="btn btn-danger">Batal</button>
+      </div>
+    </div>
+  </div>
+
+    <!-- OVERLAY -->
+    <div id="overlay"></div>
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="container">
+
+      <!-- ===== LAYOUT 1 : INPUT ===== -->
+      <section id="section-input">
+        <h1>Input Data Mahasiswa</h1>
+
+        <div class="form-section">
+          <div class="input-grid">
+
+            <input
+              type="text"
+              id="nim"
+              placeholder="NIM (12 digit)"
+              maxlength="12"
+              autocomplete="off"
+            />
+
+            <input
+              type="text"
+              id="nama"
+              placeholder="Nama Lengkap"
+            />
+
+            <input
+              type="email"
+              id="email"
+              placeholder="Email"
+            />
+
+            <select id="prodi">
+              <option value="">-- Pilih Program Studi --</option>
+              <option value="Teknik Informatika">Teknik Informatika</option>
+              <option value="Sistem Informasi">Sistem Informasi</option>
+              <option value="Teknik Komputer">Teknik Komputer</option>
+              <option value="Manajemen Informatika">Manajemen Informatika</option>
+              <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
+              <option value="Ilmu Komputer">Ilmu Komputer</option>
+            </select>
+            
+            <select id="angkatan">
+              <option value="">-- Pilih Tahun Masuk --</option>
+              <option value="2019">2019</option>
+              <option value="2020">2020</option>
+              <option value="2021">2021</option>
+              <option value="2022">2022</option>
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option></select>
+
+
+            <select id="status">
+              <option value="Aktif">Aktif</option>
+              <option value="Cuti">Cuti</option>
+              <option value="Lulus">Lulus</option>
+            </select>
+
+            <button type="button" id="addBtn" class="btn btn-primary">
+              Tambah
+            </button>
+
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== LAYOUT 2 : DATA ===== -->
+      <section id="section-data" hidden>
+        <h1>Data Mahasiswa</h1>
+
+        <div class="action-section">
+
+          <div class="action-group">
+            <input
+            type="text"
+            id="searchNim"
+            placeholder="Cari NIM (12 digit)"
+            maxlength="12"/>
+            
+            <button
+            type="button"
+            id="linearSearchBtn"
+            class="btn btn-primary">
+            Linear Search
+          </button>
+          
+          <button
+          type="button"
+          id="binarySearchBtn"
+          class="btn btn-secondary">
+          Binary Search
+        </button>
+        <button class="btn btn-secondary" onclick="resetSearch()">Reset</button>
+
+      </div>
+
+
+          <div class="action-group">
+            <select id="sortMethod">
+              <option value="bubble">Bubble Sort</option>
+              <option value="merge">Merge Sort</option>
+            </select>
+
+            <button type="button" id="sortBtn" class="btn btn-secondary">
+              Urutkan
+            </button>
+
+          </div>
+
+          <div class="action-group">
+            <button type="button" onclick="openExportChoice()" class="btn btn-primary">
+              Ekspor Data
+            </button>
+
+            <button type="button" onclick="openImportChoice()" class="btn btn-secondary">
+              Impor Data 
+            </button>
+
+          </div>
+  </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>NIM</th>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>Prodi</th>
+                <th>Angkatan</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="mahasiswaTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <div id="exportModal" class="modal">
+  <div class="modal-content">
+    <h3>Pilih Format Export</h3>
+
+    <div style="display:flex; gap:12px; margin-top:16px;">
+      <button class="btn btn-primary" onclick="exportCSV()">CSV</button>
+      <button class="btn btn-success" onclick="exportExcel()">Excel</button>
+    </div>
+
+    <div style="margin-top:16px;">
+      <button class="btn btn-secondary" onclick="closeExport()">Batal</button>
+    </div>
+  </div>
+</div>
+
+<div id="importModal" class="modal">
+  <div class="modal-content">
+    <h3>Impor Data Mahasiswa</h3>
+
+    <input
+      type="file"
+      id="importFile"
+      accept=".csv,.xlsx"
+      style="margin-top:16px"
+    />
+
+    <div style="display:flex; gap:12px; margin-top:16px;">
+      <button class="btn btn-primary" onclick="processImport()">Impor</button>
+      <button class="btn btn-secondary" onclick="closeImport()">Batal</button>
+    </div>
+  </div>
+</div>
+
+
+
+    <!-- ================= JS ================= -->
+    <script src="js/Mahasiswa.js"></script>
+    <script src="js/DataManager.js"></script>
+    <script src="js/Sorting.js"></script>
+    <script src="js/Searching.js"></script>
+    <script src="js/main.js"></script>
+
+  </body>
+  </html>
